@@ -43,7 +43,7 @@ axios.interceptors.response.use(success => {
             Message.error({message: '未知错误！'})
         }
     }
-    // return
+    return null;
 })
 
 // 预备前置路径
@@ -61,7 +61,7 @@ export const postRequest = (url, params) => {
 // 传送 json 格式的 get 请求
 export const getRequest = (url, params) => {
     return axios({
-        method: 'put',
+        method: 'get',
         url: `${base}${url}`,
         data: params
     })
