@@ -13,7 +13,7 @@ import {deleteRequest} from "@/utils/api";
 import {initMenu} from "@/utils/menus";
 
 Vue.config.productionTip = false
-Vue.use(ElementUI);
+Vue.use(ElementUI,{size:'small'});
 
 Vue.prototype.postRequest = postRequest
 Vue.prototype.putRequest = putRequest

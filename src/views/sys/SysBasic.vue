@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      activeName: 'JobLevelMana' // 激活项
+      activeName: 'PositionMana' // 激活项
     }
   },
   methods: {}
