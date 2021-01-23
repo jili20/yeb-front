@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      activeName: 'PositionMana' // 激活项
+      activeName: 'DepMana' // 激活项
     }
   },
   methods: {}
