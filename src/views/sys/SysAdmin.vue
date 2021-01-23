@@ -12,7 +12,9 @@
       <el-card class="admin-card" v-for="(admin,index) in admins" :key="index">
         <div slot="header" class="clearfix">
           <span>{{ admin.name }}</span>
-          <el-button style="float: right; padding: 3px 0;color:red;" type="text" icon="el-icon-delete"></el-button>
+          <!-- 12、 @click="deleteAdmin(admin)" -->
+          <el-button style="float: right; padding: 3px 0;color:red;" type="text" icon="el-icon-delete"
+                     @click="deleteAdmin(admin)"></el-button>
         </div>
         <div>
           <div class="img-container">
@@ -25,10 +27,12 @@
           <div>电话号码：{{ admin.telephone }}</div>
           <div>地址：{{ admin.address }}</div>
           <div>用户状态：
+            <!-- 14、更新操作员 @change="enabledChange(admin)" -->
             <el-switch
                 v-model="admin.enabled"
                 active-color="#13ce66"
                 inactive-color="#ff4949"
+                @change="enabledChange(admin)"
                 active-text="启用"
                 inactive-text="禁用">
             </el-switch>
@@ -60,13 +64,40 @@ export default {
     this.initAdmins() // 5
   },
   methods: {
+    // 15、更新操作员
+    enabledChange(admin) {
+      this.putRequest('/system/admin/', admin).then(resp => {
+        if (resp) {
+          this.initAdmins()
+        }
+      })
+    },
+    // 13、删除操作员
+    deleteAdmin(admin) {
+      this.$confirm('此操作将永久删除该[' + admin.name + '], 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.deleteRequest('/system/admin/' + admin.id).then(resp => {
+          if (resp) {
+            this.initAdmins()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
     // 10 搜索
-    doSearch(){
+    doSearch() {
       this.initAdmins()
     },
     // 4、获取所有操作员；11、加参数关键字
     initAdmins() {
-      this.getRequest('/system/admin/?keywords='+this.keywords).then(resp => {
+      this.getRequest('/system/admin/?keywords=' + this.keywords).then(resp => {
         if (resp) {
           this.admins = resp
         }
