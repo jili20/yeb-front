@@ -42,8 +42,29 @@
             <el-tag style="margin-right: 4px;" type="success" v-for="(role,index) in admin.roles" :key="index">
               {{ role.nameZh }}
             </el-tag>
-            <!-- 3个点按钮 ... -->
-            <el-button type="text" icon="el-icon-more"></el-button>
+            <!-- 16、更新操作员角色 弹出框、选择器、 -->
+            <!-- 20、@show="showPop(admin)" -->
+            <!-- 24、@hide="hidePop(admin)" hide 隐藏时触发-->
+            <el-popover
+                placement="right"
+                title="角色列表"
+                width="200"
+                @show="showPop(admin)"
+                @hide="hidePop(admin)"
+                trigger="click">
+              <!-- 17、更新操作员角色 下拉框 -->
+              <!-- 22、v-model="selectedRoles" 存的是1个角色id，multiple 多选，显示已有角色 -->
+              <el-select v-model="selectedRoles" multiple placeholder="请选择">
+                <el-option
+                    v-for="(r,index) in allRoles"
+                    :key="index"
+                    :label="r.nameZh"
+                    :value="r.id">
+                </el-option>
+              </el-select>
+              <!-- 3个点按钮 ... -->
+              <el-button slot="reference" type="text" icon="el-icon-more"></el-button>
+            </el-popover>
           </div>
           <div>备注：{{ admin.remark }}</div>
         </div>
@@ -57,13 +78,71 @@ export default {
   data() {
     return {
       admins: [], // 3
-      keywords: '' // 8、搜索关键字
+      keywords: '', // 8、搜索关键字
+      allRoles: [], // 18、更新操作员角色
+      selectedRoles: [] // 23
     }
   },
   mounted() {
     this.initAdmins() // 5
   },
   methods: {
+    // 25、更新操作员角色
+    hidePop(admin) {
+      let roles = []
+      Object.assign(roles, admin.roles) // 拷贝对象
+      let flag = false
+      // 如果选中的角色 id 的长度和原来的不一样
+      if (roles.length != this.selectedRoles.length) { // 用户对应角色id
+        flag = true
+      } else {
+        // 角色 id 长度和原来的一样，但可能角色不一样
+        // 先循环 admin.roles
+        for (let i = 0; i < roles.length; i++) {
+          let role = roles[i] // 用户对应的角色对象
+          for (let j = 0; j < this.selectedRoles.length; j++) {
+            let sr = this.selectedRoles[j]  // 拿到用户对应的角色对象的id
+            if (role.id == sr) { // 角色一样
+              roles.splice(i, 1) // 删除
+              i--
+              break
+            }
+          }
+        }
+        if (roles.length != 0) {
+          flag = true
+        }
+      }
+      if (flag) {
+        // 拼接 url(参数为 adminId、角色 rids )
+        let url = '/system/admin/role?adminId=' + admin.id;
+        this.selectedRoles.forEach(sr => {
+          url += '&rids=' + sr
+        });
+        this.putRequest(url).then(resp => {
+          if (resp) {
+            this.initAdmins()
+          }
+        });
+      }
+    },
+    // 21、下拉框获取所有用户角色
+    showPop(admin) {
+      this.initAllRoles()
+      let roles = admin.roles // 拿到整个数组
+      this.selectedRoles = []
+      roles.forEach(r => {
+        this.selectedRoles.push(r.id) // r.id 相同的角色放进数组
+      })
+    },
+    // 19、获取所有操作员
+    initAllRoles() {
+      this.getRequest(' /system/admin/roles').then(resp => {
+        if (resp) {
+          this.allRoles = resp
+        }
+      })
+    },
     // 15、更新操作员
     enabledChange(admin) {
       this.putRequest('/system/admin/', admin).then(resp => {
