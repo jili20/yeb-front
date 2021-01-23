@@ -2,9 +2,10 @@
   <div>
     <!-- 1、 -->
     <div style="display: flex;justify-content: center;margin-top: 10px;">
-      <el-input placeholder="通过用户名搜索用户..." prefix-icon="el-icon-search"
+      <!-- 9、v-model="keywords" \ @click="doSearch">搜索 -->
+      <el-input v-model="keywords" placeholder="通过用户名搜索用户..." prefix-icon="el-icon-search"
                 style="width: 400px;margin-right: 10px;"></el-input>
-      <el-button type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button type="primary" icon="el-icon-search" @click="doSearch">搜索</el-button>
     </div>
     <!-- 2、6、 -->
     <div class="admin-container">
@@ -40,7 +41,7 @@
             <!-- 3个点按钮 ... -->
             <el-button type="text" icon="el-icon-more"></el-button>
           </div>
-          <div>备注：{{ admin.remark}}</div>
+          <div>备注：{{ admin.remark }}</div>
         </div>
       </el-card>
     </div>
@@ -51,17 +52,21 @@ export default {
   name: "SysAdmin",
   data() {
     return {
-      admins: [ // 3
-      ]
+      admins: [], // 3
+      keywords: '' // 8、搜索关键字
     }
   },
   mounted() {
     this.initAdmins() // 5
   },
   methods: {
-    // 4、获取所有操作员
+    // 10 搜索
+    doSearch(){
+      this.initAdmins()
+    },
+    // 4、获取所有操作员；11、加参数关键字
     initAdmins() {
-      this.getRequest('/system/admin/').then(resp => {
+      this.getRequest('/system/admin/?keywords='+this.keywords).then(resp => {
         if (resp) {
           this.admins = resp
         }
