@@ -192,13 +192,13 @@
             fixed="right"
             width="300">
           <template slot-scope="scope">
-            <el-button style="padding: 3px;" size="mini">编辑</el-button>
+            <!-- 25-4 给编辑按钮绑定点击事件 @click="showEmpView(scope.row)" -->
+            <el-button style="padding: 3px;" size="mini" @click="showEmpView(scope.row)">编辑</el-button>
             <el-button style="padding: 3px;" size="mini" type="primary" plain>查看高级资料</el-button>
-            <el-button style="padding: 3px;" size="mini" type="danger">删除</el-button>
+            <!-- 24-1 删除员工 @click="deleteEmp(scope.row)" -->
+            <el-button style="padding: 3px;" size="mini" type="danger" @click="deleteEmp(scope.row)">删除</el-button>
           </template>
         </el-table-column>
-
-
       </el-table>
       <!-- 10、分页 -->
       <div style="display: flex;justify-content: flex-end;margin-top: 10px;">
@@ -216,8 +216,9 @@
       </div>
     </div>
     <!-- 23-1、开始- 添加员工弹框 -->
+    <!-- 25-1 编辑员工 将添加员工弹框标题改为变量 根据条件显示是添加还是编辑 :title="title"  -->
     <el-dialog
-        title="添加员工"
+        :title="title"
         :visible.sync="dialogVisible"
         width="80%">
       <div>
@@ -479,22 +480,24 @@ export default {
   name: "EmpBasic",
   data() {
     return {
+      title: '', // 25-2 添加编辑员工弹框动态标题
       emps: [], // 3、获取所有员工（分页）
       loading: false, // 7、添加 loading
       total: 0, // 11 分页总条数
       currentPage: 1, // 14、默认显示第1页(currentPage 后端字段）
       size: 10, // 15、默认每页显示 10 条
       empName: '', // 18、搜索
-
       dialogVisible: false, // 23-2、添加员工弹框
       nations: [],   // 23-7 添加员工 民族
       joblevels: [], // 23-7 职称
       politicsstatus: [], // 23-7 政治面貌
       positions: [],  // 23-7 职位
+      department:[], // 部门
       // 23-13、学历
       tiptopDegrees: ['博士', '硕士', '本科', '大专', '高中', '初中', '小学', '其它'],
       // 23-5、添加员工
       emp: {
+        id:null,
         name: '',
         gender: '',
         birthday: '',
@@ -539,17 +542,21 @@ export default {
         gender: [{required: true, message: '请输入员工性别', trigger: 'blur'}],
         birthday: [{required: true, message: '请输入出生日期', trigger: 'blur'}],
         idCard: [{required: true, message: '请输入身份证号码', trigger: 'blur'},
-          {pattern:/(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/,
-          message: '身份证号码不正确',trigger: 'blur'}],
+          {
+            pattern: /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/,
+            message: '身份证号码不正确', trigger: 'blur'
+          }],
         wedlock: [{required: true, message: '请输入婚姻状况', trigger: 'blur'}],
         nationId: [{required: true, message: '请输入民族', trigger: 'blur'}],
         nativePlace: [{required: true, message: '请输入籍贯', trigger: 'blur'}],
         politicId: [{required: true, message: '请输入政治面貌', trigger: 'blur'}],
         email: [{required: true, message: '请输入邮箱地址', trigger: 'blur'},
-          {type:'email',message: '邮箱地址格式不正确',trigger: 'blur'}],
+          {type: 'email', message: '邮箱地址格式不正确', trigger: 'blur'}],
         phone: [{required: true, message: '请输入电话号码', trigger: 'blur'},
-                {pattern:/^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/,
-                  message:'请输入合法手机号码',trigger: 'blur' }],
+          {
+            pattern: /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/,
+            message: '请输入合法手机号码', trigger: 'blur'
+          }],
 
         address: [{required: true, message: '请输入地址', trigger: 'blur'}],
         departmentId: [{required: true, message: '请输入部门名称', trigger: 'blur'}],
@@ -578,19 +585,63 @@ export default {
     this.initData() // 23-9 添加员工
   },
   methods: {
+    // 25-5 编辑员工按钮 点击事件
+    showEmpView(data) {
+      this.title = '编辑员工信息'
+      this.emp = data // 回显数据
+      this.inputDepName = data.department.name // 25-7 回显部门信息
+      this.initPositions() // 25-9 初始化职位信息
+      this.dialogVisible = true
+    },
+    // 24-2 删除员工
+    deleteEmp(data) {
+      this.$confirm('此操作将永久删除该员工' + data.name + ', 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.deleteRequest('/employee/basic/' + data.id).then(resp => {
+          if (resp) {
+            this.initEmps()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
     // 23-27 确定添加员工
+    // 25-10 添加或编辑员工 有id编辑员工 没有id添加员工
+    // 添加和编辑这里就请求方式不一样 putRequest postRequest ，其它的都一样
     doAddEmp() {
-      // empRef 表单中定义的引用对象 ref="empRef"
-      this.$refs['empRef'].validate(valid=>{
-        if (valid) {
-          this.postRequest('/employee/basic/', this.emp).then(resp => {
-            if (resp) {
-              this.dialogVisible = false
-              this.initEmps()
-            }
-          })
-        }
-      })
+      if (this.emp.id) {
+        // 有 id 编辑员工
+        this.$refs['empRef'].validate(valid => {
+          if (valid) {
+            this.putRequest('/employee/basic/', this.emp).then(resp => {
+              if (resp) {
+                this.dialogVisible = false
+                this.initEmps()
+              }
+            })
+          }
+        })
+      }else {
+        // 没有id 添加员工
+        // empRef 表单中定义的引用对象 ref="empRef"
+        this.$refs['empRef'].validate(valid => {
+          if (valid) {
+            this.postRequest('/employee/basic/', this.emp).then(resp => {
+              if (resp) {
+                this.dialogVisible = false
+                this.initEmps()
+              }
+            })
+          }
+        })
+      }
     },
     // 23-22、24 树控件节点点击事件
     handleNodeClick(data) {
@@ -670,6 +721,40 @@ export default {
     },
     // 23-4、添加员点击事件
     showAddEmpView() {
+      // 25-6 清空表单
+      this.emp={
+        id:null,
+        name: '',
+        gender: '',
+        birthday: '',
+        idCard: '',
+        wedlock: '',
+        nationId: null,
+        nativePlace: '',
+        politicId: null,
+        email: '',
+        phone: '',
+        address: '',
+        departmentId: null,
+        jobLevelId: null,
+        posId: null,
+        engageForm: '',
+        tiptopDegree: '',
+        specialty: '',
+        school: '',
+        beginDate: '',
+        workState: '在职',
+        workId: '',
+        contractTerm: null,
+        conversionTime: '',
+        notworkDate: null,
+        beginContract: '',
+        endContract: '',
+        workAge: null,
+        salaryId: null
+      }
+      this.inputDepName = '' // 25-8 清空部门信息
+      this.title = '添加员工' // 25-3 点击添加员工按钮时，弹出框标题为 添加员工
       this.getMaxWorkID() // 23-14 获取最大工号
       this.initPositions() // 23-12 获取职位
       this.dialogVisible = true
