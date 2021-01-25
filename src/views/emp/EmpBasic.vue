@@ -18,9 +18,22 @@
         <el-button type="primary"><i class="fa fa-angle-double-down" aria-hidden="true"></i>高级搜索</el-button>
       </div>
       <div>
-        <el-button type="success"><i class="fa fa-level-up" aria-hidden="true"></i>&nbsp;导入数据</el-button>
+        <!-- 27-1、3 导入数据 上传组件 用自己的按钮 -->
+        <!-- 27-5 on-success 文件上传成功时的钩子; on-error 文件上传失败时的钩子; -->
+        <!-- 27-8 导入的时候禁用导入按钮 :disabled="importDataDisabled"  -->
+        <!-- 27-11 :headers="headers" 设置上传的请求头部 -->
+        <el-upload style="display: inline-flex;margin-right: 8px;" :show-file-list="false"
+                   :headers="headers"
+                   :before-upload="beforeUpload"
+                   :on-success="onSuccess"
+                   :on-error="onError"
+                   :disabled="importDataDisabled"
+                   action="/employee/basic/import"
+        >
+          <el-button type="success" :icon="importDataBtnIcon" :disabled="importDataDisabled">{{ importDataBtnText }}</el-button>
+        </el-upload>
         <!-- 26-1、导出数据 @click="exportData" -->
-        <el-button type="success" @click="exportData"><i class="fa fa-level-down" aria-hidden="true"></i>&nbsp; 导出数据
+        <el-button type="success" @click="exportData"><i class="el-icon-download" aria-hidden="true"></i>&nbsp; 导出数据
         </el-button>
         <!-- 23-3、 @click="showAddEmpView" -->
         <el-button type="primary" icon="el-icon-plus" @click="showAddEmpView">添加员工</el-button>
@@ -482,6 +495,12 @@ export default {
   name: "EmpBasic",
   data() {
     return {
+      headers:{ // 27-12 定义请求头
+        Authorization:window.sessionStorage.getItem('tokenStr')
+      },
+      importDataDisabled:false, // 27-9 导入按钮 默认不禁用
+      importDataBtnText: '导入数据', // 27-2 导入数据
+      importDataBtnIcon: 'el-icon-upload2', // 27-2 导入数据
       title: '', // 25-2 添加编辑员工弹框动态标题
       emps: [], // 3、获取所有员工（分页）
       loading: false, // 7、添加 loading
@@ -587,6 +606,25 @@ export default {
     this.initData() // 23-9 添加员工
   },
   methods: {
+    // 27-6 数据导入成功 恢复原来的图标和状态
+    onSuccess() {
+      this.importDataBtnIcon = 'el-icon-upload2'
+      this.importDataBtnText = '导入数据'
+      this.importDataDisabled = false // 29-10 不禁用导入按钮
+      this.initEmps()
+    },
+    // 27-7 数据导入失败 恢复原来的图标和状态
+    onError() {
+      this.importDataBtnIcon = 'el-icon-upload2'
+      this.importDataBtnText = '导入数据'
+      this.importDataDisabled = false // 29-10 不禁用导入按钮
+    },
+    // 27-4、导入数据 改变图标和添加 loading 状态
+    beforeUpload() {
+      this.importDataBtnIcon = 'el-icon-loading'
+      this.importDataBtnText = '正在导入'
+      this.importDataDisabled = true // 29-10 禁用导入按钮
+    },
     // 26-2 下载请求
     exportData() {
       this.downloadRequest('/employee/basic/export')
