@@ -19,7 +19,9 @@
       </div>
       <div>
         <el-button type="success"><i class="fa fa-level-up" aria-hidden="true"></i>&nbsp;导入数据</el-button>
-        <el-button type="success"><i class="fa fa-level-down" aria-hidden="true"></i>&nbsp; 导出数据</el-button>
+        <!-- 26-1、导出数据 @click="exportData" -->
+        <el-button type="success" @click="exportData"><i class="fa fa-level-down" aria-hidden="true"></i>&nbsp; 导出数据
+        </el-button>
         <!-- 23-3、 @click="showAddEmpView" -->
         <el-button type="primary" icon="el-icon-plus" @click="showAddEmpView">添加员工</el-button>
       </div>
@@ -492,12 +494,12 @@ export default {
       joblevels: [], // 23-7 职称
       politicsstatus: [], // 23-7 政治面貌
       positions: [],  // 23-7 职位
-      department:[], // 部门
+      department: [], // 部门
       // 23-13、学历
       tiptopDegrees: ['博士', '硕士', '本科', '大专', '高中', '初中', '小学', '其它'],
       // 23-5、添加员工
       emp: {
-        id:null,
+        id: null,
         name: '',
         gender: '',
         birthday: '',
@@ -585,6 +587,10 @@ export default {
     this.initData() // 23-9 添加员工
   },
   methods: {
+    // 26-2 下载请求
+    exportData() {
+      this.downloadRequest('/employee/basic/export')
+    },
     // 25-5 编辑员工按钮 点击事件
     showEmpView(data) {
       this.title = '编辑员工信息'
@@ -628,7 +634,7 @@ export default {
             })
           }
         })
-      }else {
+      } else {
         // 没有id 添加员工
         // empRef 表单中定义的引用对象 ref="empRef"
         this.$refs['empRef'].validate(valid => {
@@ -722,8 +728,8 @@ export default {
     // 23-4、添加员点击事件
     showAddEmpView() {
       // 25-6 清空表单
-      this.emp={
-        id:null,
+      this.emp = {
+        id: null,
         name: '',
         gender: '',
         birthday: '',

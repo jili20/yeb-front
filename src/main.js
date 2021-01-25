@@ -11,15 +11,16 @@ import {putRequest} from "@/utils/api";
 import {getRequest} from "@/utils/api";
 import {deleteRequest} from "@/utils/api";
 import {initMenu} from "@/utils/menus";
+import {downloadRequest} from "@/utils/download";
 
 Vue.config.productionTip = false
 Vue.use(ElementUI,{size:'small'});
-
+// 插件形式使用请求
 Vue.prototype.postRequest = postRequest
 Vue.prototype.putRequest = putRequest
 Vue.prototype.getRequest = getRequest
 Vue.prototype.deleteRequest = deleteRequest
-
+Vue.prototype.downloadRequest = downloadRequest // 以插件的形式使用下载相关请求
 
 // 使用 router.beforeEach 注册一个全局前置守卫
 router.beforeEach((to, from, next) => {
