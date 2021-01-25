@@ -1,6 +1,7 @@
 <template>
   <div>
     <el-table
+        size="mini"
         :data="emps"
         stripe
         border>
@@ -94,11 +95,35 @@
           <el-tag v-else>暂未设置</el-tag>
         </template>
       </el-table-column>
+      <!-- 2-1 编辑工资账套 -->
       <el-table-column
           label="操作"
           align="center">
         <template slot-scope="scope">
-          <el-button type="danger">修改工资账套</el-button>
+          <!-- 2-5 当前员工的工资账套 @show="showPop(scope.row.salary)" show	显示时触发 -->
+          <!-- 2-9 @hide="hidePop(scope.row)" hide	隐藏时触发 -->
+          <el-popover
+              size="mini"
+              @show="showPop(scope.row.salary)"
+              @hide="hidePop(scope.row)"
+              placement="right"
+              title="编辑工资账套"
+              width="200"
+              trigger="click">
+            <div>
+              <!-- 2-6  v-model="currentSalary" -->
+              <el-select v-model="currentSalary" placeholder="请选择">
+                <el-option
+                    size="mini"
+                    v-for="item in salaries"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                </el-option>
+              </el-select>
+            </div>
+            <el-button slot="reference" type="danger">修改工资账套</el-button>
+          </el-popover>
         </template>
       </el-table-column>
     </el-table>
@@ -119,15 +144,45 @@ export default {
   data() {
     return {
       emps: [],
+      salaries: [], // 2-2 工资账套数组
       currentPage: 1, // 1-2 当前页
       size: 10, // 1-2 每页显示条数
-      total: 0  // 1-2 分页
+      total: 0, // 1-2 分页
+      currentSalary: null // 2-7 当前员工工资账套
     }
   },
   mounted() {
     this.initEmps()
+    this.initSalaries() // 2-4 初始化 获取所有工资账套
   },
   methods: {
+    // 2-10
+    hidePop(data) { // 隐藏时触发
+      // 当前员工工资账套存在 并且不等于当前的 才更新
+      if (this.currentSalary && this.currentSalary!==data.salary.id) {
+        this.putRequest('/salary/sobcfg/?eid=' + data.id + '&sid=' + this.currentSalary).then(resp => {
+          if (resp) {
+            this.initEmps()
+          }
+        });
+      }
+    },
+    // 2-8 员工工资账套
+    showPop(data) { // 显示时触发
+      if (data) {
+        this.currentSalary = data.id;
+      } else {
+        this.currentSalary = null
+      }
+    },
+    // 2-3 获取所有工资账套
+    initSalaries() {
+      this.getRequest('/salary/sobcfg/salaries').then(resp => {
+        if (resp) {
+          this.salaries = resp
+        }
+      })
+    },
     // 1-3 分页-当前页
     currentChange(page) {
       this.currentPage = page
