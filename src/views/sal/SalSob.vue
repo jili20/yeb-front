@@ -114,7 +114,9 @@
         </el-steps>
         <!-- 3-4 循环遍历数据 -->
         <!-- 3-7 v-show="activeItemIndex = index" 与下标相等才展示 -->
-        <el-input :placeholder="'请输入'+itemName+'...'" v-for="(itemName,index) in salaryItemName"
+        <!-- 4-2 修改各项的值 绑定和遍历-->
+        <el-input v-model="salary[title]" :placeholder="'请输入'+salaryItemName[index]+'...'"
+                  v-for="(value,title,index) in salary"
                   :key="index" v-show="activeItemIndex === index" style="width: 200px;"></el-input>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -133,7 +135,7 @@ export default {
       dialogVisible: false, // 2-2 添加工资账套对话框
       salaries: [], // 1-2 定义数组
       activeItemIndex: 0, // 3-6 步骤条激活索引
-      salaryItemName: [ // 3-2 步骤条数据
+      salaryItemName: [ // 3-2 步骤条数据对象
         '账套名称',
         '基本工资',
         '交通补助',
@@ -145,7 +147,21 @@ export default {
         '医疗保险基数',
         '公积金比率',
         '公积金基数'
-      ]
+      ],
+      // 4-1 定义工资账套数据
+      salary: {
+        name: '',
+        basicSalary: 0,
+        trafficSalary: 0,
+        lunchSalary: 0,
+        bonus: 0,
+        pensionPer: 0.0,
+        pensionBase: 0,
+        medicalPer: 0.0,
+        medicalBase: 0,
+        accumulationFundPer: 0.0,
+        accumulationFundBase: 0
+      }
     }
   },
   mounted() {
@@ -163,13 +179,34 @@ export default {
     },
     nextStep() { // 3-12 下一步 完成
       if (this.activeItemIndex === 10) {
-        alert("ok")
+        // alert("ok")
+        // console.log(this.salary)
+        // 4-4 添加工资账套
+        this.postRequest('/salary/sob/', this.salary).then(resp => {
+          if (resp) {
+            this.initSalaries()
+            this.dialogVisible = false
+          }
+        })
         return
       }
       this.activeItemIndex++
     },
     // 2-4 点击打开添加工资账套对话框
     showAddSalaryView() {
+      this.salary = { // 4-3 清空表单
+        name: '',
+        basicSalary: 0,
+        trafficSalary: 0,
+        lunchSalary: 0,
+        bonus: 0,
+        pensionPer: 0.0,
+        pensionBase: 0,
+        medicalPer: 0.0,
+        medicalBase: 0,
+        accumulationFundPer: 0.0,
+        accumulationFundBase: 0
+      }
       this.activeItemIndex = 0 // 3-14 步骤条索引从0开始
       this.dialogVisible = true;
     },
