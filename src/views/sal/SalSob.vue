@@ -4,7 +4,8 @@
     <div style="display: flex;justify-content: space-between;">
       <!-- 2-3 @click="showAddSalaryView" 点击打开 添加工资账套对话框 -->
       <el-button type="primary" icon="el-icon-plus" size="mini" @click="showAddSalaryView">添加工资账套</el-button>
-      <el-button type="success" icon="el-icon-refresh" size="mini"></el-button>
+      <!-- 5-3 刷新功能 直接绑定点击事件 调用获取所有数据方法 -->
+      <el-button type="success" icon="el-icon-refresh" size="mini" @click="initSalaries"></el-button>
     </div>
     <div style="margin-top: 10px;">
       <el-table
@@ -93,8 +94,11 @@
         </el-table-column>
         <el-table-column
             label="操作">
-          <el-button type="primary" size="mini">编辑</el-button>
-          <el-button type="danger" size="mini">删除</el-button>
+          <!-- 5-1 删除工资账套 拿到当前行数据 绑定点击事件 传行数据-->
+          <template slot-scope="scope">
+            <el-button type="primary" size="mini">编辑</el-button>
+            <el-button type="danger" size="mini" @click="deleteSalary(scope.row)">删除</el-button>
+          </template>
         </el-table-column>
 
       </el-table>
@@ -168,6 +172,26 @@ export default {
     this.initSalaries()
   },
   methods: {
+    // 5-2 删除工资账套
+    deleteSalary(data) {
+      this.$confirm('此操作将永久删除该[' + data.name + ']工资账套, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.deleteRequest('/salary/sob/'+ data.id).then(resp=>{
+          if (resp) {
+            this.initSalaries()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+
+    },
     preStep() { // 3-13 上一步 取消
       if (this.activeItemIndex === 0) {
         return
