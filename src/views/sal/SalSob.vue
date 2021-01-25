@@ -96,7 +96,8 @@
             label="操作">
           <!-- 5-1 删除工资账套 拿到当前行数据 绑定点击事件 传行数据-->
           <template slot-scope="scope">
-            <el-button type="primary" size="mini">编辑</el-button>
+            <!-- 6-4 @click="showEditSalaryView(scope.row)">编辑  -->
+            <el-button type="primary" size="mini" @click="showEditSalaryView(scope.row)">编辑</el-button>
             <el-button type="danger" size="mini" @click="deleteSalary(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -104,8 +105,9 @@
       </el-table>
     </div>
     <!-- 2-1 添加工资账套对话框 -->
+    <!-- 6-2 把标题变成属性 -->
     <el-dialog
-        title="添加工资账套"
+        :title="dialogTitle"
         :visible.sync="dialogVisible"
         width="50%">
       <!-- 3-8 调整样式 -->
@@ -136,6 +138,7 @@ export default {
   name: "SalSob",
   data() {
     return {
+      dialogTitle: '添加工资账套', // 6-1 标题
       dialogVisible: false, // 2-2 添加工资账套对话框
       salaries: [], // 1-2 定义数组
       activeItemIndex: 0, // 3-6 步骤条激活索引
@@ -172,6 +175,25 @@ export default {
     this.initSalaries()
   },
   methods: {
+    // 6-5 点击编辑显示对话框
+    showEditSalaryView(data) {
+      this.dialogTitle = '编辑工资账套' // 设置标题
+      this.activeItemIndex = 0 // 默认激活的索引
+      this.salary.id = data.id
+      this.salary.name = data.name
+      this.salary.basicSalary = data.basicSalary
+      this.salary.trafficSalary = data.trafficSalary
+      this.salary.lunchSalary = data.lunchSalary
+      this.salary.bonus = data.bonus
+      this.salary.pensionPer = data.pensionPer
+      this.salary.pensionBase = data.pensionBase
+      this.salary.medicalPer = data.medicalPer
+      this.salary.medicalBase = data.medicalBase
+      this.salary.accumulationFundPer = data.accumulationFundPer
+      this.salary.accumulationFundBase = data.accumulationFundBase
+
+      this.dialogVisible = true // 打开对话框
+    },
     // 5-2 删除工资账套
     deleteSalary(data) {
       this.$confirm('此操作将永久删除该[' + data.name + ']工资账套, 是否继续?', '提示', {
@@ -179,7 +201,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.deleteRequest('/salary/sob/'+ data.id).then(resp=>{
+        this.deleteRequest('/salary/sob/' + data.id).then(resp => {
           if (resp) {
             this.initSalaries()
           }
@@ -190,7 +212,6 @@ export default {
           message: '已取消删除'
         });
       });
-
     },
     preStep() { // 3-13 上一步 取消
       if (this.activeItemIndex === 0) {
@@ -206,18 +227,29 @@ export default {
         // alert("ok")
         // console.log(this.salary)
         // 4-4 添加工资账套
-        this.postRequest('/salary/sob/', this.salary).then(resp => {
-          if (resp) {
-            this.initSalaries()
-            this.dialogVisible = false
-          }
-        })
+        if (this.salary.id) { // 6-6 有 id 调用编辑接口，没有 id 执行添加
+          this.putRequest('/salary/sob/', this.salary).then(resp => {
+            if (resp) {
+              this.initSalaries()
+              this.dialogVisible = false // 关闭弹框
+            }
+          })
+
+        } else {
+          this.postRequest('/salary/sob/', this.salary).then(resp => {
+            if (resp) {
+              this.initSalaries()
+              this.dialogVisible = false
+            }
+          })
+        }
         return
       }
       this.activeItemIndex++
     },
     // 2-4 点击打开添加工资账套对话框
     showAddSalaryView() {
+      this.dialogTitle = '添加工资账套' // 6-3 添加的时候显示此标题
       this.salary = { // 4-3 清空表单
         name: '',
         basicSalary: 0,
