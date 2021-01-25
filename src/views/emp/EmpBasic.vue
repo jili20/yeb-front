@@ -1,43 +1,167 @@
 <template>
   <div>
-    <div style="display: flex;justify-content: space-between;">
-      <!-- 1、 -->
-      <!-- 20、搜索 v-model="empName" <el-input @keydown.enter.native="initEmps" 回车键调用初始化会员方法
-           21、@click="initEmps">搜索</el-button>
-           22、清空 clearable @clear="initEmps" -->
-      <div style="margin-top: 10px;">
-        <el-input style="width: 300px;margin-right: 10px;"
-                  prefix-icon="el-icon-search"
-                  v-model="empName"
-                  placeholder="通过员工名进行搜索..."
-                  @keydown.enter.native="initEmps"
-                  clearable
-                  @clear="initEmps"
-        ></el-input>
-        <el-button type="primary" icon="el-icon-search" @click="initEmps">搜索</el-button>
-        <el-button type="primary"><i class="fa fa-angle-double-down" aria-hidden="true"></i>高级搜索</el-button>
+    <div>
+      <div style="display: flex;justify-content: space-between;">
+        <!-- 1、 -->
+        <!-- 20、搜索 v-model="empName" <el-input @keydown.enter.native="initEmps" 回车键调用初始化会员方法
+             21、@click="initEmps">搜索</el-button>
+             22、清空 clearable @clear="initEmps" -->
+        <!-- 28-8  :disabled="showAdvanceSearchVisible" -->
+        <div style="margin-top: 10px;">
+          <el-input style="width: 300px;margin-right: 10px;"
+                    prefix-icon="el-icon-search"
+                    v-model="empName"
+                    placeholder="请输入员工名进行搜索..."
+                    @keydown.enter.native="initEmps"
+                    clearable
+                    @clear="initEmps"
+                    :disabled="showAdvanceSearchVisible"
+          ></el-input>
+          <el-button type="primary" icon="el-icon-search" @click="initEmps"
+                     :disabled="showAdvanceSearchVisible">搜索
+          </el-button>
+          <!-- 28-3 @click="showAdvanceSearchVisible = !showAdvanceSearchVisible" -->
+          <!-- 28-5 判断图标样式 :class="showAdvanceSearchVisible?'fa fa-angle-double-up':'fa fa-angle-double-down'"-->
+          <el-button type="primary" @click="showAdvanceSearchVisible = !showAdvanceSearchVisible">
+            <i :class="showAdvanceSearchVisible?'fa fa-angle-double-up':'fa fa-angle-double-down'"
+               aria-hidden="true"></i>高级搜索
+          </el-button>
+        </div>
+        <div>
+          <!-- 27-1、3 导入数据 上传组件 用自己的按钮 -->
+          <!-- 27-5 on-success 文件上传成功时的钩子; on-error 文件上传失败时的钩子; -->
+          <!-- 27-8 导入的时候禁用导入按钮 :disabled="importDataDisabled"  -->
+          <!-- 27-11 :headers="headers" 设置上传的请求头部 -->
+          <el-upload style="display: inline-flex;margin-right: 8px;" :show-file-list="false"
+                     :headers="headers"
+                     :before-upload="beforeUpload"
+                     :on-success="onSuccess"
+                     :on-error="onError"
+                     :disabled="importDataDisabled"
+                     action="/employee/basic/import"
+          >
+            <el-button type="success" :icon="importDataBtnIcon" :disabled="importDataDisabled">{{
+                importDataBtnText
+              }}
+            </el-button>
+          </el-upload>
+          <!-- 26-1、导出数据 @click="exportData" -->
+          <el-button type="success" @click="exportData"><i class="el-icon-download" aria-hidden="true"></i>&nbsp; 导出数据
+          </el-button>
+          <!-- 23-3、 @click="showAddEmpView" -->
+          <el-button type="primary" icon="el-icon-plus" @click="showAddEmpView">添加员工</el-button>
+        </div>
       </div>
-      <div>
-        <!-- 27-1、3 导入数据 上传组件 用自己的按钮 -->
-        <!-- 27-5 on-success 文件上传成功时的钩子; on-error 文件上传失败时的钩子; -->
-        <!-- 27-8 导入的时候禁用导入按钮 :disabled="importDataDisabled"  -->
-        <!-- 27-11 :headers="headers" 设置上传的请求头部 -->
-        <el-upload style="display: inline-flex;margin-right: 8px;" :show-file-list="false"
-                   :headers="headers"
-                   :before-upload="beforeUpload"
-                   :on-success="onSuccess"
-                   :on-error="onError"
-                   :disabled="importDataDisabled"
-                   action="/employee/basic/import"
-        >
-          <el-button type="success" :icon="importDataBtnIcon" :disabled="importDataDisabled">{{ importDataBtnText }}</el-button>
-        </el-upload>
-        <!-- 26-1、导出数据 @click="exportData" -->
-        <el-button type="success" @click="exportData"><i class="el-icon-download" aria-hidden="true"></i>&nbsp; 导出数据
-        </el-button>
-        <!-- 23-3、 @click="showAddEmpView" -->
-        <el-button type="primary" icon="el-icon-plus" @click="showAddEmpView">添加员工</el-button>
-      </div>
+      <!-- 28-1 高级搜索条件框 -->
+      <!-- 28-4 高级搜索条件框 v-show="showAdvanceSearchVisible" -->
+      <!-- 28-6 添加展开动画效果 <transition name="fade"> 包含整个搜索条件框 </transition> -->
+      <!-- 30-2 绑定搜索条件数据 v-model="searchValue.xxxxx" -->
+      <transition name="slide-fade">
+        <div v-show="showAdvanceSearchVisible"
+             style="border: 1px solid #379ff5;border-radius: 5px;box-sizing: border-box;padding: 5px;margin: 10px 0;">
+          <el-row>
+            <el-col :span="5">
+              政治面貌：
+              <el-select v-model="searchValue.politicId" placeholder="请选择政治面貌" size="mini" style="width: 130px;">
+                <el-option
+                    v-for="item in politicsstatus"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="4">
+              民族：
+              <el-select v-model="searchValue.nationId" placeholder="民族" size="mini" style="width: 130px;">
+                <el-option
+                    v-for="item in nations"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="4">
+              职位：
+              <el-select v-model="searchValue.posId" placeholder="职位" size="mini" style="width: 130px;">
+                <el-option
+                    v-for="item in positions"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="4">
+              职称：
+              <el-select v-model="searchValue.jobLevelId" placeholder="职称" size="mini" style="width: 130px;">
+                <el-option
+                    v-for="item in joblevels"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="6">
+              聘用形式：
+              <el-radio-group v-model="searchValue.engageForm">
+                <el-radio label="劳动合同">劳动合同</el-radio>
+                <el-radio label="劳务合同">劳务合同</el-radio>
+              </el-radio-group>
+            </el-col>
+          </el-row>
+          <el-row style="margin-top: 10px;">
+            <!-- 30-4 处理部门 v-model="visible2" -->
+            <el-col :span="5">
+              所属部门：
+              <el-popover
+                  placement="bottom"
+                  title="请选择部门"
+                  width="220"
+                  trigger="manual"
+                  v-model="visible2">
+                <!-- 23-20 添加树形控件 default-expand-all	是否默认展开所有节点 ，节点点击事件 @node-click="handleNodeClick" -->
+                <el-tree :data="allDeps"
+                         :props="defaultProps"
+                         default-expand-all
+                         @node-click="searchHandleNodeClick"></el-tree>
+                <!-- 30-6 @node-click="searchHandleNodeClick" -->
+                <!-- node-click	节点被点击时的回调 共三个参数，依次为：传递给 data 属性的数组中该节点所对应的对象、节点对应的 Node、节点组件本身。 -->
+                <!-- 自定义点击事件 -->
+                <!-- 30-7 @click="showDepView2" -->
+                <div slot="reference"
+                     style="width:130px;display: inline-flex;
+                 border-radius: 5px;border: 1px solid #dedede;height: 28px;cursor: pointer;align-items: center;
+                 font-size: 12px;padding-left: 8px;box-sizing: border-box;"
+                     @click="showDepView2">{{ inputDepName }}
+                </div><!-- 23-25 回显数据 {{inputDepName}} -->
+              </el-popover>
+            </el-col>
+            <!-- 30-3 处理日期：v-model="searchValue.beginDateScope" value-format="yyyy-MM-dd" ;
+                 两个面板各自独立切换当前年份 使用unlink-panels -->
+            <el-col :span="10">
+              入职日期：
+              <el-date-picker
+                  unlink-panels
+                  size="mini"
+                  v-model="searchValue.beginDateScope"
+                  type="datetimerange"
+                  range-separator="至"
+                  value-format="yyyy-MM-dd"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期">
+              </el-date-picker>
+            </el-col>
+            <el-col :span="5" :offset="4">
+              <el-button size="mini">取消</el-button>
+              <!-- 30-10 @click="initEmps('advanced')" -->
+              <el-button type="primary" icon="el-icon-search" size="mini" @click="initEmps('advanced')">搜索</el-button>
+            </el-col>
+          </el-row>
+        </div>
+      </transition>
     </div>
     <div style="margin-top: 10px;">
       <!-- 2、表格；6、添加 loading -->
@@ -495,10 +619,20 @@ export default {
   name: "EmpBasic",
   data() {
     return {
-      headers:{ // 27-12 定义请求头
-        Authorization:window.sessionStorage.getItem('tokenStr')
+      searchValue: { // 30-1 高级搜索 条件对象
+        politicId: null, // 政治面貌
+        nationId: null, // 民族
+        posId: null, // 职位
+        jobLevelId: null, // 职称
+        engageForm: '', // 聘用形式
+        departmentId: null, // 部门 id
+        beginDateScope: null // 入职日期范围
       },
-      importDataDisabled:false, // 27-9 导入按钮 默认不禁用
+      showAdvanceSearchVisible: false, // 28-2 高级搜索框 动态效果
+      headers: { // 27-12 定义请求头
+        Authorization: window.sessionStorage.getItem('tokenStr')
+      },
+      importDataDisabled: false, // 27-9 导入按钮 默认不禁用
       importDataBtnText: '导入数据', // 27-2 导入数据
       importDataBtnIcon: 'el-icon-upload2', // 27-2 导入数据
       title: '', // 25-2 添加编辑员工弹框动态标题
@@ -549,6 +683,7 @@ export default {
         salaryId: null
       },
       visible: false, // 23-18 弹出框
+      visible2: false, // 30-5 高级搜索 部门
       // 23-21 树形控件
       defaultProps: {
         children: 'children',
@@ -604,6 +739,7 @@ export default {
   mounted() {
     this.initEmps() // 5、获取所有员工（分页）
     this.initData() // 23-9 添加员工
+    this.initPositions() // 23-12 获取职位
   },
   methods: {
     // 27-6 数据导入成功 恢复原来的图标和状态
@@ -687,11 +823,21 @@ export default {
         })
       }
     },
+    // 30-7 高级搜索 部门点击事件
+    searchHandleNodeClick(data) {
+      this.inputDepName = data.name
+      this.searchValue.departmentId = data.id
+      this.visible2 = !this.visible2 // 弹框
+    },
     // 23-22、24 树控件节点点击事件
     handleNodeClick(data) {
       this.inputDepName = data.name
       this.emp.departmentId = data.id
-      this.visible = !this.visible // 关闭弹框
+      this.visible = !this.visible // 弹框
+    },
+    // 30-9 高级搜索 部门弹框
+    showDepView2() {
+      this.visible2 = !this.visible2
     },
     // 23-16 添加员工 所属部门
     showDepView() {
@@ -815,23 +961,66 @@ export default {
 
     },
     // 4、获取所有员工（分页）
-    initEmps() {
+    initEmps(type) {
       this.loading = true // 8、添加 loading
+      // 30-11 定义高级搜索 url
+      let url = '/employee/basic/?currentPage=' + this.currentPage + '&size=' + this.size
+      if (type && type === 'advanced') { // 说明是高级搜索
+        if (this.searchValue.politicId) {
+          url += '&politicId=' + this.searchValue.politicId
+        }
+        if (this.searchValue.nationId) {
+          url += '&nationId=' + this.searchValue.nationId
+        }
+        if (this.searchValue.posId) {
+          url += '&posId=' + this.searchValue.posId
+        }
+        if (this.searchValue.jobLevelId) {
+          url += '&jobLevelId=' + this.searchValue.jobLevelId
+        }
+        if (this.searchValue.engageForm) {
+          url += '&engageForm=' + this.searchValue.engageForm
+        }
+        if (this.searchValue.departmentId) {
+          url += '&departmentId=' + this.searchValue.departmentId
+        }
+        if (this.searchValue.beginDateScope) {
+          url += '&beginDateScope=' + this.searchValue.beginDateScope
+        }
+      } else {
+        url += '&name=' + this.empName
+      }
       // 17、添加分页参数 ?currentPage='+this.currentPage+'&size='+this.size
       // 19、添加用户名搜索参数 +'&name='+this.empName,传参 根据条件搜索，不传参查询所有
-      this.getRequest('/employee/basic/?currentPage=' + this.currentPage + '&size=' + this.size + '&name=' + this.empName).then(resp => {
+      this.getRequest(url).then(resp => {
         // this.getRequest('/employee/basic/').then(resp => {
         this.loading = false // 9、关闭 loading
         if (resp) {
           this.emps = resp.data
           this.total = resp.total // 12、分页
         }
-      })
+      });
     }
   }
 }
 </script>
 
-<style scoped>
+<style>
+/*28-7 展开收起条件搜索框动画样式 */
+/* 可以设置不同的进入和离开动画 */
+/* 设置持续时间和动画函数 */
+.slide-fade-enter-active {
+  transition: all .8s ease;
+}
 
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+
+.slide-fade-enter, .slide-fade-leave-to
+  /* .slide-fade-leave-active for below version 2.1.8 */
+{
+  transform: translateX(10px);
+  opacity: 0;
+}
 </style>
