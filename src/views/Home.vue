@@ -89,15 +89,19 @@ export default {
           window.sessionStorage.removeItem('tokenStr')
           window.sessionStorage.removeItem('user')
           // 路由替换到登录页面
-          this.$router.replace('/')
+          // this.$router.replace('/')
           // 清空菜单信息；在src/utils/menus.js 中初始化菜单信息
           this.$store.commit('initRoutes', [])
+          this.$router.replace('/')
         }).catch(() => {
           this.$message({
             type: 'info',
             message: '已取消注销登录'
           });
         });
+      }
+      if (command === 'userinfo') {
+        this.$router.push('/userinfo')
       }
     }
   }
