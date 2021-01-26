@@ -3,16 +3,21 @@
     <el-container>
       <el-header class="homeHeader">
         <div class="title">云E办</div>
-        <el-dropdown class="userInfo" @command="commandHandler">
+        <!-- 1-1 添加在线聊天入口 -->
+        <div>
+          <el-button type="text" icon="el-icon-bell" size="normal"
+                     style="margin-right: 8px;color: black;" @click="goChar"></el-button>
+          <el-dropdown class="userInfo" @command="commandHandler">
           <span class="el-dropdown-link">
             {{ user.name }}<i><img :src="user.userFace"></i>
           </span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="userinfo">个人中心</el-dropdown-item>
-            <el-dropdown-item command="setting">设置</el-dropdown-item>
-            <el-dropdown-item command="logout">注销登录</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="userinfo">个人中心</el-dropdown-item>
+              <el-dropdown-item command="setting">设置</el-dropdown-item>
+              <el-dropdown-item command="logout">注销登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
       </el-header>
       <el-container>
         <el-aside width="200px">
@@ -65,6 +70,10 @@ export default {
     }
   },
   methods: {
+    // 1-2 进入在线聊天页面
+    goChar() {
+      this.$router.push('/chat')
+    },
     // 注销登录
     commandHandler(command) {
       if (command === 'logout') {
@@ -122,14 +131,16 @@ export default {
   border-radius: 50%;
   margin-left: 8px;
 }
-.homeWelcome{
+
+.homeWelcome {
   text-align: center;
   font-size: 30px;
-  font-family:华文楷体;
+  font-family: 华文楷体;
   color: #409ef4;
   padding-top: 50px;
 }
-.homeRouterView{
+
+.homeRouterView {
   margin-top: 10px;
 }
 </style>
