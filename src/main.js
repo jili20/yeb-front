@@ -35,6 +35,8 @@ router.beforeEach((to, from, next) => {
                 if (resp) {
                     // 存入用户信息，转字符串，存入 sessionStorage
                     window.sessionStorage.setItem('user', JSON.stringify(resp))
+                    // 同步用户信息 编辑用户
+                    store.commit('INIT_ADMIN',resp)
                     next();
                 }
             })

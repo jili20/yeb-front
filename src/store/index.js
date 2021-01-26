@@ -24,6 +24,10 @@ const store = new Vuex.Store({
         idDot: {} // 未读消息 对象
     },
     mutations: { // 与 state 同步执行；可以改变 state 对应的值的方法
+        // 编辑用户 同步用户信息
+        INIT_ADMIN(state, admin) {
+            state.currentAdmin = admin
+        },
         // 初始化路由
         initRoutes(state, data) {
             state.routes = data

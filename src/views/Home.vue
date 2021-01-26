@@ -60,13 +60,16 @@ export default {
   data() {
     return {
       // 获取用户信息，将字符串转对象
-      user: JSON.parse(window.sessionStorage.getItem('user'))
+      // user: JSON.parse(window.sessionStorage.getItem('user'))
     }
   },
   computed: {
     // 从 vuex 获取 routes
     routes() {
       return this.$store.state.routes
+    },
+    user() {
+      return this.$store.state.currentAdmin
     }
   },
   methods: {
