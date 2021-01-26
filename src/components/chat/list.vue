@@ -1,11 +1,13 @@
 <template>
   <div id="list">
-  	<ul style="padding-left: 0;">
-  		<li v-for="item in sessions" :class="{ active: item.id === currentSessionId }" v-on:click="changeCurrentSessionId(item.id)"><!--   :class="[item.id === currentSessionId ? 'active':'']" -->
-  			<img class="avatar" :src="item.user.img" :alt="item.user.name">
-  			<p class="name">{{item.user.name}}</p>
-  		</li>
-  	</ul>
+    <ul style="padding-left: 0;">
+      <li v-for="item in admins" :class="{ active: currentSession?item.username === currentSession.username:false }"
+          v-on:click="changecurrentSession(item)"><!--   :class="[item.id === currentSession ? 'active':'']" -->
+        <!-- 未读消息提示 小红点  <el-badge is-dot> </el-badge> -->
+        <el-badge is-dot :is-dot="idDot[user.username+'#'+item.username]"><img class="avatar" :src="item.userFace" :alt="item.name"></el-badge>
+        <p class="name">{{ item.name }}</p>
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -14,45 +16,50 @@ import {mapState} from 'vuex'
 
 export default {
   name: 'list',
-  data () {
+  data() {
     return {
-
+      user:JSON.parse(window.sessionStorage.getItem('user'))
     }
   },
   computed: mapState([
-  'sessions',
-  'currentSessionId'
-	]),
-  methods:{
-  	changeCurrentSessionId:function (id) {
-  		this.$store.commit('changeCurrentSessionId',id)
-  	}
+    'idDot',
+    'admins',
+    'currentSession'
+  ]),
+  methods: {
+    changecurrentSession: function (currentSession) {
+      this.$store.commit('changecurrentSession', currentSession)
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 #list {
-	li {
-		padding: 0 15px;
-		border-bottom: 1px solid #292C33;
-		cursor: pointer;
-		&:hover {
-			background-color: rgba(255, 255, 255, 0.03);
-		}
-	}
-  li.active {/*注意这个是.不是冒号:*/
-			background-color: rgba(255, 255, 255, 0.1);
-	}
-	.avatar {
-		border-radius: 2px;
-		width: 30px;
-		height: 30px;
-		vertical-align: middle;
-	}
-	.name {
-		display: inline-block;
-		margin-left: 15px;
-	}
+  li {
+    padding: 0 15px;
+    border-bottom: 1px solid #292C33;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+  }
+
+  li.active { /*注意这个是.不是冒号:*/
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .avatar {
+    border-radius: 2px;
+    width: 30px;
+    height: 30px;
+    vertical-align: middle;
+  }
+
+  .name {
+    display: inline-block;
+    margin-left: 15px;
+  }
 }
 </style>
