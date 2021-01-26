@@ -28,7 +28,7 @@ const store = new Vuex.Store({
         INIT_ADMIN(state, admin) {
             state.currentAdmin = admin
         },
-        // 初始化路由
+        // 初始化路由 菜单
         initRoutes(state, data) {
             state.routes = data
         },
